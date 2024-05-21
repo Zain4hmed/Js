@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"],
+        input[type="text"] {
+            width: calc(100% - 10px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .item {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .item label {
+            margin-bottom: 10px;
+            display: block;
+        }
+        #settleButton {
+            display: none;
+        }
+        #settlement {
+            display: none;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        #settlement h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        #settlement p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-group">
+        <label for="inputBox">Enter Number of People :</label>
+        <input type="number" id="inputBox" name="NumOfPeople">
+    </div>
+    <div class="form-group">
+        <button onclick="createItemList()">Next</button>
+    </div>
+
+    <div id="itemList"></div>
+
+    <div>
+        <button id="settleButton" onclick="settle()">Settle All</button>
+    </div>
+
+    <div id="settlement">
+        <h2>Settlement</h2>
+        <div id="settlementDetails"></div>
+    </div>
+</div>
+
+<script>
+    function createItemList() {
+        var inputElement = document.getElementById('inputBox');
+        var itemCount = parseInt(inputElement.value);
+
+        if (!isNaN(itemCount) && itemCount > 0) {
+            var itemListDiv = document.getElementById('itemList');
+            itemListDiv.innerHTML = '';
+
+            for (var i = 1; i <= itemCount; i++) {
+                var itemDiv = document.createElement('div');
+                itemDiv.classList.add('item');
+
+                var nameLabel = document.createElement('label');
+                nameLabel.textContent = 'Name:';
+                var nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.name = 'itemName' + i;
+
+                var amountLabel = document.createElement('label');
+                amountLabel.textContent = 'Amount:';
+                var amountInput = document.createElement('input');
+                amountInput.type = 'number';
+                amountInput.name = 'itemAmount' + i;
+
+                itemDiv.appendChild(nameLabel);
+                itemDiv.appendChild(nameInput);
+                itemDiv.appendChild(amountLabel);
+                itemDiv.appendChild(amountInput);
+
+                itemListDiv.appendChild(itemDiv);
+            }
+            // show settle button :
+            document.getElementById('settleButton').style.display = 'block';
+        } else {
+            console.error('Please enter a valid number greater than 0.');
+        }
+    }
+
+    function settle() {
+        var inputElements = document.querySelectorAll('#itemList .item');
+
+        var totalAmount = 0;
+        var numPeople = 0;
+
+        var amounts = {};
+
+        inputElements.forEach(function(item) {
+            var name = item.querySelector('input[type="text"]').value.trim();
+            var amount = parseFloat(item.querySelector('input[type="number"]').value);
+
+            if (name && !isNaN(amount) && amount > 0) {
+                totalAmount += amount;
+                numPeople++;
+                amounts[name] = amount;
+            }
+        });
+
+        if (numPeople > 0) {
+            var averageAmount = totalAmount / numPeople;
+
+            var settlementDetailsDiv = document.getElementById('settlementDetails');
+            settlementDetailsDiv.innerHTML = '';
+
+            for (var payer in amounts) {
+                for (var recipient in amounts) {
+                    if (payer !== recipient) {
+                        var payerAmount = amounts[payer];
+                        var recipientAmount = amounts[recipient];
+                        var difference = averageAmount - recipientAmount;
+
+                        if (difference > 0) {
+                            var settleAmount = Math.min(payerAmount, difference);
+                            if (settleAmount > 0) {
+                                var settlementMessage = document.createElement('p');
+                                settlementMessage.textContent = recipient + ' should pay ' + payer + ' ' + settleAmount.toFixed(2);
+                                settlementDetailsDiv.appendChild(settlementMessage);
+                            }
+                        }
+                    }
+                }
+            }
+
+            document.getElementById('settlement').style.display = 'block';
+        } else {
+            console.error('Please enter valid amounts.');
+        }
+    }
+</script>
+</body>
+</html>
